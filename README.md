@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🌈 Color Safe Map Markers📍️</h1>
+  <h1 align="center">🌈 Color Safe Markers📍️</h1>
   <p align="center">
     <br />
     <img src="https://github.com/Mary-Tyler-Moore/readme-gifs/blob/3abe93ee2b1304195dca07fe86832c5e404a5ffd/color-safe-markers.gif?raw=true" width="600px" />
@@ -15,7 +15,7 @@
 
 <br />
 
-## 🌈 Color Safe Map Markers 📍
+## 🌈 Color Safe Markers 📍
 
 Have you ever wondered how our color perception affects our ability to distingush the difference between colored map markers? Would you like to learn more about the importance of web accessibility in design? Dive in and explore with me!
 
