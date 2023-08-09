@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leaflet Map with Random Markers</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100dvh;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <select id="filterDropdown">
+        <option value="none">Normal Vision</option>
+        <option value="protanomaly">Protanomaly</option>
+        <option value="protanopia">Protanopia</option>
+        <option value="deuteranomaly">Deuteranomaly</option>
+        <option value="deuteranopia">Deuteranopia</option>
+        <option value="tritanomaly">Tritanomaly</option>
+        <option value="tritanopia">Tritanopia</option>
+        <option value="achromatomaly">Achromatomaly</option>
+        <option value="achromatopsia">Achromatopsia</option>
+      </select>
+      <div id="map"></div>
+  </div>
+  <!-- Filter definitions -->
+  <svg id="colorblind-filters">
+    <defs>
+      <filter id="protanomaly">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix" 
+          values="0.817 0.183 0 0 0
+                  0.333 0.667 0 0 0
+                  0 0.125 0.875 0 0
+                  0 0 0 1 0" />
+      </filter>
+      <filter id="protanopia">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.567 0.433 0 0 0
+                  0.558 0.442 0 0 0
+                  0 0.242 0.758 0 0 
+                  0 0 0 1 0"  />
+      </filter>
+      <filter id="deuteranomaly">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.8 0.2 0 0 0
+                  0.258 0.742 0 0 0
+                  0 0.142 0.858 0 0
+                  0 0 0 1 0"  />
+      </filter>
+      <filter id="deuteranopia">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.625 0.375 0 0 0
+                  0.7 0.3 0 0 0 
+                  0 0.3 0.7 0 0
+                  0 0 0 1 0" />
+      </filter>
+      <filter id="tritanomaly">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.967 0.033 0 0 0
+                  0 0.733 0.267 0 0
+                  0 0.183 0.817 0 0
+                  0 0 0 1 0"  />
+      </filter>
+      <filter id="tritanopia">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.95 0.05 0 0 0
+                  0 0.433 0.567 0 0
+                  0 0.475 0.525 0 0
+                  0 0 0 1 0"  />
+      </filter>
+      <filter id="achromatomaly">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.618 0.320 0.062 0 0
+                  0.163 0.775 0.062 0 0
+                  0.163 0.320 0.516 0 0
+                  0 0 0 1 0"  />
+      </filter>
+      <filter id="achromatopsia">
+        <feColorMatrix in="SourceGraphic"
+          type="matrix"
+          values="0.299 0.587 0.114 0 0
+                  0.299 0.587 0.114 0 0
+                  0.299 0.587 0.114 0 0
+                  0 0 0 1 0"  />
+      </filter>
+    </defs>
+  </svg>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    /* eslint-disable no-undef */
+
+    // magnification with which the map will start
+    const zoom = 12;
+    // co-ordinates
+    const lat = 32.43924;
+    const lng =  -81.77330;
+
+    const osmLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+    const cartoDB = '<a href="http://cartodb.com/attributions">CartoDB</a>';
+
+    const osmUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+    const osmAttrib = `&copy; ${osmLink} Contributors`;
+
+    const landUrl = "https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png";
+    const cartoAttrib = `&copy; ${osmLink} Contributors & ${cartoDB}`;
+
+    const osmMap = L.tileLayer(osmUrl, { attribution: osmAttrib });
+    const landMap = L.tileLayer(landUrl, { attribution: cartoAttrib });
+
+    const brightLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; ${osmLink} Contributors & ${cartoDB}'
+    });
+
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Map data &copy; <a href="https://www.esri.com/">Esri</a>'
+    });
+
+    // config map
+    let config = {
+        center: [lat, lng],
+        zoom: zoom,
+        layers: [brightLayer],
+        minZoom: 12,
+        maxZoom: 18
+    };
+
+    // calling map
+    const map = L.map("map", {
+      ...config,
+      zoomControl: false
+    });
+
+    L.control.zoom({
+      position: 'bottomright'
+    }).addTo(map);
+
+    // setting bounds to twice the current view
+
+    // 1. Get the current bounds
+    const currentBounds = map.getBounds();
+
+    // Array of marker colors and corresponding dark mode versions
+    const markerColors = [
+      "color-1.png",
+      "color-2.png",
+      "color-3.png",
+      "color-4.png",
+      "color-5.png",
+      "color-6.png",
+    ];
+
+    const markerColorsDark = [
+      "color-1-dark.png",
+      "color-2-dark.png",
+      "color-3-dark.png",
+      "color-4-dark.png",
+      "color-5-dark.png",
+      "color-6-dark.png",
+    ];
+
+    // Function to set marker icon based on color index and dark mode
+    function setMarkerIcon(colorIndex, darkMode) {
+    const colorArray = darkMode ? markerColorsDark : markerColors;
+    const imageUrl = colorArray[colorIndex];
+
+    // Create an SVG representation for the marker
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="27.75px" height="40px" viewBox="0 0 27.75 40">
+        <image x="0" y="0" width="27.75px" height="40px" xlink:href="${imageUrl}" class="colorblind-marker"/>
+    </svg>`;
+
+    return L.divIcon({
+        className: 'svg-marker-icon', // A class for additional styling if needed
+        html: svgString,
+        iconSize: [27.75, 40],
+        iconAnchor: [13.875, 40],
+        popupAnchor: [1, -34]
+    });
+}
+
+// Update the applyColorblindFilter function:
+
+function applyColorblindFilter(filterName) {
+    const filterValue = filterName === "none" ? "" : `url(#${filterName})`;
+    const markers = document.querySelectorAll('.colorblind-marker');
+    markers.forEach(marker => {
+         // Remove the SVG element from the DOM
+         const parentNode = marker.parentNode;
+        parentNode.removeChild(marker);
+
+        // Update the filter
+        marker.style.filter = filterValue;
+
+        // Add the SVG element back to the DOM
+        parentNode.appendChild(marker);
+    });
+}
+
+    // Function to generate random latitude and longitude values within currentBounds
+    function randomLatLngWithinBounds(bounds) {
+        const southWest = bounds.getSouthWest();
+        const northEast = bounds.getNorthEast();
+
+        // Define a buffer based on an estimate for the marker size in terms of map coordinates
+        const latBuffer = (northEast.lat - southWest.lat) * 0.08;  // Adjust this as needed
+        const lngBuffer = (northEast.lng - southWest.lng) * 0.08;  // Adjust this as needed
+
+        const lat = Math.random() * (northEast.lat - southWest.lat - 2 * latBuffer) + southWest.lat + latBuffer;
+        const lng = Math.random() * (northEast.lng - southWest.lng - 2 * lngBuffer) + southWest.lng + lngBuffer;
+
+        return { lat, lng };
+    }
+
+
+    // Function to check if a point is too close to any other point in an array of points
+    function isTooClose(newPoint, existingPoints, minDistance = 0.012) {  // minDistance is in degrees
+        return existingPoints.some(point => {
+            const latDiff = newPoint.lat - point.lat;
+            const lngDiff = newPoint.lng - point.lng;
+            return Math.sqrt(latDiff * latDiff + lngDiff * lngDiff) < minDistance;
+        });
+    }
+
+    // Generate random markers and store their color indices
+    const randomMarkers = [];
+    const existingCoords = [];
+
+    for (let i = 0; i < 50; i++) {
+        let coords = randomLatLngWithinBounds(currentBounds);
+
+        // Check if the generated coordinates are too close to any of the previously generated coordinates
+        while (isTooClose(coords, existingCoords)) {
+            coords = randomLatLngWithinBounds(currentBounds);
+        }
+
+        existingCoords.push(coords);
+
+        const colorIndex = Math.floor(Math.random() * markerColors.length);
+        randomMarkers.push({ ...coords, colorIndex });
+    }
+
+    // Add markers with initial icons (light mode)
+    const markers = [];
+    randomMarkers.forEach(markerData => {
+      const marker = L.marker([markerData.lat, markerData.lng], {
+        icon: setMarkerIcon(markerData.colorIndex, false)
+      });
+      markers.push(marker); // Store the marker in a separate array
+      marker.addTo(map);
+      const markerElement = marker._icon;
+      if (markerElement) {
+          markerElement.classList.add('colorblind-marker');
+      }
+    });
+
+    // Event listener to switch marker icons when the layer changes
+    map.on('baselayerchange', function (eventLayer) {
+        const isDarkMode = eventLayer.name === "Dark Map";
+
+        // First, reset the filter to none
+        applyColorblindFilter("none");
+
+        markers.forEach((marker, index) => {
+            marker.setIcon(setMarkerIcon(randomMarkers[index].colorIndex,   isDarkMode));
+        });
+
+        // Then, apply the selected filter
+        const selectedFilter = document.getElementById('filterDropdown').value;
+        applyColorblindFilter(selectedFilter);
+    });
+
+    // Create the layer control
+    const baseLayers = {
+      "Bright Map": brightLayer,
+      "Dark Map": landMap
+    };
+
+    L.control.layers(baseLayers).addTo(map);
+
+    // Function to apply colorblind filter to the map
+    function applyColorblindFilter(filterName) {
+    setTimeout(() => {
+        const filterValue = filterName === "none" ? "" : `url(#${filterName})`;
+        const markers = document.querySelectorAll('.colorblind-marker');
+        markers.forEach(marker => {
+            // Remove the SVG element from the DOM
+            const parentNode = marker.parentNode;
+            parentNode.removeChild(marker);
+
+            // Update the filter
+            marker.style.filter = filterValue;
+
+            // Add the SVG element back to the DOM
+            parentNode.appendChild(marker);
+        });
+    }, 50); // Delay of 50ms
+}
+
+    // Event listener for the dropdown
+    document.getElementById('filterDropdown').addEventListener('change', function() {
+      const selectedFilter = this.value;
+      applyColorblindFilter(selectedFilter);
+    });
+
+    // legends
+  
+//   // the control element is placed in the bottom right corner
+//   const legend = L.control({
+//     position: "bottomleft",
+//   });
+  
+//   // color table
+//   const color = ["0000fb", "bf0000"];
+  
+//   // table of texts that will appear in the popup and legend
+//   const label = ["Blue Line", "Red Line"];
+  
+//   const rows = [];
+//   legend.onAdd = function () {
+//     // we create a div with a legend class
+//     const div = L.DomUtil.create("div", "legend");
+  
+//     L.DomEvent.disableClickPropagation(div);
+  
+//     color.map((item, index) => {
+//       rows.push(`
+//           <div class="row" style="margin: 1px auto;">
+//             <i style="background: #${item}"></i>${label[index]}
+//           </div>  
+//       `);
+//     });
+//     div.innerHTML = rows.join("");
+//     return div;
+//   };
+  
+//   // we are adding a legend to the map
+//   legend.addTo(map);
+
+  </script>
+</body>
+</html>
