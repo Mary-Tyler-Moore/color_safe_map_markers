@@ -29,7 +29,7 @@ Have you ever wondered how our color perception affects our ability to distingus
 
 ## 🌍 Web Accessibility
 
-Web accessibility is a responsibility. Ensuring everyone can access and understand content is crucial. This project aligns with the **WCAG Guidelines**. Learn more [here](https://www.w3.org/WAI/standards-guidelines/wcag/).
+Web accessibility is a big responsibility. Ensuring everyone can access and understand content is crucial. This project aligns with the **WCAG Guidelines**. Learn more [here](https://www.w3.org/WAI/standards-guidelines/wcag/).
 
 <br>
 
